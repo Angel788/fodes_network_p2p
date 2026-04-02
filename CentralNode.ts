@@ -7,8 +7,8 @@ const main = async () => {
         const ip = await getPublicIP()
         const node = await CentralNode.create(ip);
         console.log(node.getDirections())
-        const redisClient = RedisClient.getInstance();
-        (await redisClient).set("BoostrapNode", node.getMultiaddrs()[0].toString());
+        //const redisClient = RedisClient.getInstance();
+        //(await redisClient).set("BoostrapNode", node.getMultiaddrs()[0].toString());
         setInterval(async () => {
         }, 5000);
     } catch (error) {
