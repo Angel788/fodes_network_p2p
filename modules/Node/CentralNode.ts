@@ -13,8 +13,8 @@ export class CentralNode extends NodeLibp2p {
         const instance = new CentralNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/240'],
-                announce: ['/ip4/' + ip + '/tcp/240']
+                listen: ['/ip4/0.0.0.0/tcp/1080'],
+                announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [tcp()],
             streamMuxers: [yamux()],
