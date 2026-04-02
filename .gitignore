@@ -1,0 +1,42 @@
+# =========================================
+# Dependencias de Node.js
+# =========================================
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# =========================================
+# Compilación de TypeScript
+# =========================================
+# Ignora la carpeta donde se genera el código JavaScript final
+dist/
+build/
+out/
+
+# =========================================
+# Base de Datos (LevelDB)
+# =========================================
+# ¡IMPORTANTE! Cambia estos nombres por la ruta exacta 
+# de la carpeta donde tu código inicializa LevelDB.
+db/
+data/
+leveldb/
+*.db
+*.log
+LOCK
+
+# =========================================
+# Variables de entorno y Secretos (CRÍTICO)
+# =========================================
+# Como tu repo ahora es público, NUNCA subas estos archivos
+.env
+.env.*
+*.key
+*.pem
+
+# =========================================
+# Archivos del Sistema Operativo
+# =========================================
+.DS_Store
+Thumbs.db

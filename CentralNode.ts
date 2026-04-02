@@ -1,11 +1,10 @@
 import { RedisClient } from "./CentralModules/RedisClient.js";
+import { getPublicIP } from "./CentralModules/GCP_IP.js"
 import { CentralNode } from "./modules/Node/CentralNode.js"
-
 
 const main = async () => {
     try {
-        const ip = process.argv[2]
-        console.log(ip)
+        const ip = await getPublicIP()
         const node = await CentralNode.create(ip);
         console.log(node.getDirections())
         const redisClient = RedisClient.getInstance();
