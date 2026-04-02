@@ -5,6 +5,7 @@ export async function getPublicIP(): Promise<string> {
             headers: { 'Metadata-Flavor': 'Google' },
             signal: AbortSignal.timeout(2000)
         });
+        console.log(response)
         if (response.ok) {
             const ip = await response.text();
             return ip.trim();
