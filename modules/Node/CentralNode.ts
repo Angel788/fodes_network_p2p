@@ -14,7 +14,9 @@ export class CentralNode extends NodeLibp2p {
         const instance = new CentralNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080'],
+                listen: ['/ip4/0.0.0.0/tcp/1080',
+                    '/ip6/::/tcp/1080'
+                ],
                 announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [tcp()],
@@ -29,10 +31,10 @@ export class CentralNode extends NodeLibp2p {
                     clientMode: false,
                     peerInfoMapper: removePrivateAddressesMapper
                 }),
-                /*autoNAT: autoNAT(),
+                autoNAT: autoNAT(),
                 relay: circuitRelayServer({
                     reservations: { applyDefaultLimit: false }
-                })*/
+                })
             }
         });
         instance.id = instance.node.peerId.toString();

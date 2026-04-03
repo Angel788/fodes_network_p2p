@@ -16,7 +16,11 @@ export class NormalNode extends NodeLibp2p {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080'],
+                listen: [
+                    '/ip4/0.0.0.0/tcp/1080',
+                    '/ip6/::/tcp/1080'
+                ],
+                announce: ['/ip6/' + ip + '/tcp/1080']
             },
             transports: [
                 tcp(),
