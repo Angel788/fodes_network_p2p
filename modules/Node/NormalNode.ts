@@ -7,6 +7,8 @@ import { ping } from '@libp2p/ping'
 import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht';
 import { bootstrap } from '@libp2p/bootstrap'
 import { NodeLibp2p } from './NodeLibp2p.js'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { dcutr } from '@libp2p/dcutr'
 export class NormalNode extends NodeLibp2p {
     public static async create(): Promise<NormalNode> {
         const instance = new NormalNode();
@@ -14,7 +16,7 @@ export class NormalNode extends NodeLibp2p {
             addresses: {
                 listen: ['/ip4/0.0.0.0/tcp/1080']
             },
-            transports: [tcp()],
+            transports: [tcp(), circuitRelayTransport()],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
             services: {
@@ -23,9 +25,11 @@ export class NormalNode extends NodeLibp2p {
                 ping: ping(),
                 dht: kadDHT({
                     protocol: '/fodes',
-                    clientMode: false,
+                    clientMode: true,
                     peerInfoMapper: removePrivateAddressesMapper
                 }),
+                dcutr: dcutr()
+
             }
         });
         instance.id = instance.node.peerId.toString();

@@ -8,6 +8,7 @@ import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { autoNAT } from '@libp2p/autonat'
+import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 export class CentralNode extends NodeLibp2p {
     public static async create(ip: string): Promise<CentralNode> {
         const instance = new CentralNode();
@@ -29,7 +30,10 @@ export class CentralNode extends NodeLibp2p {
                     peerInfoMapper: removePrivateAddressesMapper
                 }),
                 autoNAT: autoNAT(),
-                upnpNAT: uPnPNAT()
+                upnpNAT: uPnPNAT(),
+                relay: circuitRelayServer({
+                    reservations: { applyDefaultLimit: false }
+                })
             }
         });
         instance.id = instance.node.peerId.toString();
