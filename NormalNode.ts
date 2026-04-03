@@ -11,7 +11,7 @@ interface DireccionLibp2p {
 const main = async () => {
     try {
         const ip = await getPublicIp()
-        const dir = '/ip4/34.122.202.211/tcp/1080/p2p/12D3KooWHSZzdZwuWU4YdqLbJAR9ZJB2CrvPVbxX8sZozh4Dmmzq';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
+        const dir = '/ip4/34.122.202.211/tcp/1080/p2p/12D3KooWFiFpATN9HyvhWkTw6B3qZXM4U8iAesdLDrDsfUVtLBik';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
         const node = await NormalNode.create(ip, dir);
         const nodeGateway = new NodeGateway(node)
         console.log(node.getMultiaddrs());
