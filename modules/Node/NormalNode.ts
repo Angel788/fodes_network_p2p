@@ -12,7 +12,8 @@ export class NormalNode extends NodeLibp2p {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080']
+                listen: ['/ip4/0.0.0.0/tcp/1080'],
+                announce: ['/ip4/0.0.0.0/tcp/1080']
             },
             transports: [tcp()],
             streamMuxers: [yamux()],
@@ -24,7 +25,7 @@ export class NormalNode extends NodeLibp2p {
                 dht: kadDHT({
                     protocol: '/fodes',
                     clientMode: false,
-                    peerInfoMapper: removePublicAddressesMapper
+                    //peerInfoMapper: removePublicAddressesMapper
                 }),
             }
         });
