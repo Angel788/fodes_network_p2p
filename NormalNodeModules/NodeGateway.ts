@@ -82,8 +82,9 @@ export class NodeGateway {
         try {
             const content = await this.normalNode.getContent(targetCID, protocol);
             console.log(content)
+            console.log("--")
             callBack({
-                success: true,
+                success: (content ? true : false),
                 data: content
             })
         } catch (errorContent) {

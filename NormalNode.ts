@@ -17,7 +17,7 @@ const main = async () => {
         console.log(node.getDirections());
         node.contact(dir);
         setInterval(async () => {
-            //node.imprimirEstadoDeLaRed();
+            node.imprimirEstadoDeLaRed();
         }, 5000);
     } catch (error) {
         console.log(error)

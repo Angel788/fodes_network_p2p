@@ -10,13 +10,13 @@ import { NodeLibp2p } from './NodeLibp2p.js'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { autoNAT } from '@libp2p/autonat'
-
+import { mdns } from '@libp2p/mdns'
 export class NormalNode extends NodeLibp2p {
     static async create(ip: string, bootstrapIp: string): Promise<NormalNode> {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/0', '/ip6/::/tcp/0']
+                listen: ['/ip4/0.0.0.0/tcp/1080', '/ip6/::/tcp/1080']
             },
             transports: [
                 tcp(),
@@ -24,7 +24,7 @@ export class NormalNode extends NodeLibp2p {
             ],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
-            peerDiscovery: [],
+            peerDiscovery: [mdns()],
             services: {
                 identify: identify(),
                 identifyPush: identifyPush(),
