@@ -9,18 +9,18 @@ import { bootstrap } from '@libp2p/bootstrap'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 export class NormalNode extends NodeLibp2p {
     public static async create(ip: string, bootstrapIp: string): Promise<NormalNode> {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
                 listen: ['/ip4/0.0.0.0/tcp/1080'],
-                announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [tcp(), circuitRelayTransport()],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
-            peerDiscovery: [bootstrap({ list: [bootstrapIp] })],
+            //peerDiscovery: [bootstrap({ list: [bootstrapIp] })],
             services: {
                 identify: identify(),
                 identifyPush: identifyPush(),
@@ -30,13 +30,14 @@ export class NormalNode extends NodeLibp2p {
                     clientMode: false,
                     peerInfoMapper: removePrivateAddressesMapper
                 }),
-                dcutr: dcutr()
-
+                dcutr: dcutr(),
+                pubsub: gossipsub()
             }
         });
         instance.id = instance.node.peerId.toString();
         instance.start();
         instance.nodeDb.initDb()
+        instance.node.services.pubsub.subscribe('fodes-sala-principal');
         return instance;
     }
 }

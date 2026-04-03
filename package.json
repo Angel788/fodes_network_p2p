@@ -12,6 +12,7 @@
     "server": "tsx CentralNode.ts"
   },
   "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^14.1.2",
     "@chainsafe/libp2p-noise": "^17.0.0",
     "@chainsafe/libp2p-yamux": "^8.0.1",
     "@libp2p/autonat": "^3.0.13",
