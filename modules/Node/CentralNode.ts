@@ -12,10 +12,11 @@ import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 export class CentralNode extends NodeLibp2p {
     public static async create(ip: string): Promise<CentralNode> {
         const instance = new CentralNode();
+        console.log(ip)
         instance.node = await createLibp2p({
             addresses: {
                 listen: ['/ip4/0.0.0.0/tcp/1080'],
-                announce: ['/ip4/' + ip + '/tcp/1080']
+                //announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [tcp()],
             streamMuxers: [yamux()],
