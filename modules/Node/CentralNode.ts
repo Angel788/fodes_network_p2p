@@ -33,6 +33,7 @@ export class CentralNode extends NodeLibp2p {
                 dht: kadDHT({
                     protocol: '/fodes',
                     clientMode: false,
+                    peerInfoMapper: removePrivateAddressesMapper
                 }),
                 relay: circuitRelayServer(),
             }
