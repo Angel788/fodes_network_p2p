@@ -11,6 +11,7 @@ import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { autoNAT } from '@libp2p/autonat'
+import { waitForDebugger } from 'inspector'
 export class NormalNode extends NodeLibp2p {
     static async create(ip: string, bootstrapIp: string): Promise<NormalNode> {
         const instance = new NormalNode();
@@ -19,8 +20,7 @@ export class NormalNode extends NodeLibp2p {
                 listen: [
                     '/ip4/0.0.0.0/tcp/1080',
                     '/ip6/::/tcp/1080'
-                ],
-                announce: ['/ip6/' + ip + '/tcp/1080']
+                ]
             },
             transports: [
                 tcp(),
@@ -28,9 +28,6 @@ export class NormalNode extends NodeLibp2p {
             ],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
-            peerDiscovery: [
-                bootstrap({ list: [bootstrapIp] })
-            ],
             services: {
                 identify: identify(),
                 identifyPush: identifyPush(),
@@ -38,13 +35,14 @@ export class NormalNode extends NodeLibp2p {
                 autonat: autoNAT(),
                 dht: kadDHT({
                     protocol: '/fodes',
-                    clientMode: true,
+                    clientMode: false,
                 }),
                 dcutr: dcutr()
             }
         });
         instance.id = instance.node.peerId.toString();
         await instance.node.start();
+        //await instance.waitForPeers();
         await instance.nodeDb.initDb();
         return instance;
     }
