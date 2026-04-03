@@ -4,7 +4,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify, identifyPush } from '@libp2p/identify'
 import { ping } from '@libp2p/ping'
-import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
+import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { autoNAT } from '@libp2p/autonat'
@@ -26,7 +26,7 @@ export class CentralNode extends NodeLibp2p {
                 dht: kadDHT({
                     protocol: '/fodes',
                     clientMode: false,
-                    //peerInfoMapper: removePublicAddressesMapper
+                    peerInfoMapper: removePrivateAddressesMapper
                 }),
                 autoNAT: autoNAT(),
                 upnpNAT: uPnPNAT()

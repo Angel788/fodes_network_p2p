@@ -4,7 +4,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify, identifyPush } from '@libp2p/identify'
 import { ping } from '@libp2p/ping'
-import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht';
+import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht';
 import { bootstrap } from '@libp2p/bootstrap'
 import { NodeLibp2p } from './NodeLibp2p.js'
 export class NormalNode extends NodeLibp2p {
@@ -12,8 +12,7 @@ export class NormalNode extends NodeLibp2p {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080'],
-                announce: ['/ip4/0.0.0.0/tcp/1080']
+                listen: ['/ip4/0.0.0.0/tcp/1080']
             },
             transports: [tcp()],
             streamMuxers: [yamux()],
@@ -25,7 +24,7 @@ export class NormalNode extends NodeLibp2p {
                 dht: kadDHT({
                     protocol: '/fodes',
                     clientMode: false,
-                    //peerInfoMapper: removePublicAddressesMapper
+                    peerInfoMapper: removePrivateAddressesMapper
                 }),
             }
         });
