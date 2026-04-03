@@ -16,18 +16,17 @@ export class NormalNode extends NodeLibp2p {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                // Considera usar tcp/0 si vas a correr más de un nodo en la misma PC
                 listen: ['/ip4/0.0.0.0/tcp/1080'],
+                announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [
                 tcp(),
-                // 1. CONFIGURACIÓN DEL RELAY: Le decimos que busque y use puentes automáticamente
                 circuitRelayTransport()
             ],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
             peerDiscovery: [
-                bootstrap({ list: [bootstrapIp] })
+                bootstrap({ list: [bootstrapIp] }),
             ],
 
             services: {
@@ -37,18 +36,15 @@ export class NormalNode extends NodeLibp2p {
                 autonat: autoNAT(),
                 dht: kadDHT({
                     protocol: '/fodes',
-                    clientMode: true,
+                    clientMode: false,
+                    kBucketSize: 20
                 }),
                 dcutr: dcutr()
             }
         });
-
         instance.id = instance.node.peerId.toString();
-
-        // 6. CORRECCIÓN: Agregamos 'await' porque start e initDb son asíncronos
         await instance.node.start();
         await instance.nodeDb.initDb();
-
         return instance;
     }
 }
