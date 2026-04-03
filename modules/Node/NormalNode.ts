@@ -30,8 +30,7 @@ export class NormalNode extends NodeLibp2p {
                     clientMode: false,
                     peerInfoMapper: removePrivateAddressesMapper
                 }),
-                dcutr: dcutr(),
-                pubsub: gossipsub()
+                dcutr: dcutr()
             }
         });
         instance.id = instance.node.peerId.toString();
