@@ -16,13 +16,13 @@ const main = async () => {
         const nodeGateway = new NodeGateway(node)
         console.log(node.getMultiaddrs());
         node.contact(dir);
+        setInterval(async () => {
+            node.imprimirEstadoDeLaRed();
+        }, 5000);
     } catch (error) {
         console.log(error)
 
     }
-    setInterval(async () => {
-
-    }, 5000);
 }
 
 main()

@@ -37,7 +37,6 @@ export class NormalNode extends NodeLibp2p {
         instance.id = instance.node.peerId.toString();
         instance.start();
         instance.nodeDb.initDb()
-        instance.node.services.pubsub.subscribe('fodes-sala-principal');
         return instance;
     }
 }

@@ -85,15 +85,15 @@ export class NodeLibp2p {
             try {
                 for await (const provider of this.node.contentRouting.findProviders(cid)) {
                     try {
-                         const cidUtils = new CIDUtils();
+                        const cidUtils = new CIDUtils();
                         const idProvider = provider.id;
                         console.log(idProvider.toString())
                         console.log(this.id)
-                        if(idProvider.toString()==this.id){
-                            const res=(await this.nodeDb.getContent(targetCID)).data;
+                        if (idProvider.toString() == this.id) {
+                            const res = (await this.nodeDb.getContent(targetCID)).data;
                             console.log(res)
                             const cidReponse = await (await cidUtils.convertJsontoCID(res)).toString();
-                            if (targetCID==cidReponse){
+                            if (targetCID == cidReponse) {
                                 console.log("Publicacion Encontrada");
                                 return res;
                             }
@@ -106,13 +106,13 @@ export class NodeLibp2p {
                         const res = await lp.read()
                         const output = new TextDecoder().decode(res.subarray());
                         const cidReponse = await (await cidUtils.convertJsontoCID(JSON.parse(output))).toString();
-                        if (cidReponse == targetCID){
+                        if (cidReponse == targetCID) {
                             console.log("Publicacion Encontrada");
                             return JSON.parse(output);
                         }
                     }
-                    catch(err) {
-                        console.log("Hubo un error en la constulta: ",err);
+                    catch (err) {
+                        console.log("Hubo un error en la constulta: ", err);
                     }
                 }
 
@@ -137,5 +137,42 @@ export class NodeLibp2p {
         } catch (error) {
 
         }
+    }
+    public async imprimirEstadoDeLaRed() {
+        console.log("\n==========================================");
+        console.log("🔍 ESTADO DE MI DIRECTORIO P2P");
+        console.log("==========================================");
+
+        // 1. Ver todas las conexiones activas (El tubo físico está abierto)
+        const conexiones = this.node.getConnections();
+        console.log(`🟢 Conexiones activas actuales: ${conexiones.length}`);
+        conexiones.forEach(conn => {
+            console.log(`   -> Conectado a: ${conn.remotePeer.toString()}`);
+        });
+
+        console.log("------------------------------------------");
+
+        // 2. Ver el Peer Store (El DHT: Todos los nodos de los que he oído hablar)
+        const nodosConocidos = await this.node.peerStore.all();
+
+        // Filtramos para no contarnos a nosotros mismos
+        const vecinos = nodosConocidos.filter(peer => peer.id.toString() !== this.id);
+
+        console.log(`📚 Nodos totales en mi directorio (K-Buckets): ${vecinos.length}`);
+
+        vecinos.forEach(vecino => {
+            console.log(`   🆔 ID: ${vecino.id.toString()}`);
+
+            // Imprimir las direcciones públicas/privadas que conocemos de este vecino
+            if (vecino.addresses.length > 0) {
+                console.log(`      📍 Direcciones conocidas:`);
+                vecino.addresses.forEach(addr => {
+                    console.log(`         - ${addr.multiaddr.toString()}`);
+                });
+            } else {
+                console.log(`      ⚠️ Sin direcciones (Solo sabemos que existe)`);
+            }
+        });
+        console.log("==========================================\n");
     }
 }
