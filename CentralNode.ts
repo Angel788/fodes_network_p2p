@@ -10,7 +10,7 @@ const main = async () => {
         //const redisClient = RedisClient.getInstance();
         //(await redisClient).set("BoostrapNode", node.getMultiaddrs()[0].toString());
         setInterval(async () => {
-            node.imprimirEstadoDeLaRed();
+            //node.imprimirEstadoDeLaRed();
         }, 5000);
     } catch (error) {
         console.log("Existe un error: " + error)
