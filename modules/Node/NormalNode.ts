@@ -4,7 +4,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify, identifyPush } from '@libp2p/identify'
 import { ping } from '@libp2p/ping'
-import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht';
+import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht';
 import { bootstrap } from '@libp2p/bootstrap'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
@@ -17,27 +17,20 @@ export class NormalNode extends NodeLibp2p {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: [
-                    '/ip4/0.0.0.0/tcp/1080',
-                    '/ip6/::/tcp/1080'
-                ]
+                listen: ['/ip4/0.0.0.0/tcp/240']
             },
-            transports: [
-                tcp(),
-                circuitRelayTransport()
-            ],
+            transports: [tcp()],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
             services: {
                 identify: identify(),
                 identifyPush: identifyPush(),
                 ping: ping(),
-                autonat: autoNAT(),
                 dht: kadDHT({
                     protocol: '/fodes',
                     clientMode: false,
+                    peerInfoMapper: removePublicAddressesMapper
                 }),
-                dcutr: dcutr()
             }
         });
         instance.id = instance.node.peerId.toString();
