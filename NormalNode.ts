@@ -11,13 +11,13 @@ interface DireccionLibp2p {
 const main = async () => {
     try {
         const ip = await getPublicIp()
-        const dir = '/ip4/35.193.32.229/tcp/1080/p2p/12D3KooWEUNQaYsRr5K7s7vsWaqvAsqYAq55dFhe5RfWMvgT224q';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
+        const dir = '/ip4/35.188.11.88/tcp/1080/p2p/12D3KooWDGGvWJz1R4tX3de5Jm7GGciBpECo2FbGtPYKAd9zX3qp';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
         const node = await NormalNode.create(ip, dir);
         const nodeGateway = new NodeGateway(node)
-        console.log(node.getMultiaddrs());
+        console.log(node.getDirections());
         node.contact(dir);
         setInterval(async () => {
-            /7node.imprimirEstadoDeLaRed();
+            ///node.imprimirEstadoDeLaRed();
         }, 5000);
     } catch (error) {
         console.log(error)

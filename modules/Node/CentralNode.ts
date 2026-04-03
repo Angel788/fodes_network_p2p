@@ -27,12 +27,12 @@ export class CentralNode extends NodeLibp2p {
                 dht: kadDHT({
                     protocol: '/fodes',
                     clientMode: false,
-                    //peerInfoMapper: removePrivateAddressesMapper
+                    peerInfoMapper: removePrivateAddressesMapper
                 }),
-                autoNAT: autoNAT(),
+                /*autoNAT: autoNAT(),
                 relay: circuitRelayServer({
                     reservations: { applyDefaultLimit: false }
-                })
+                })*/
             }
         });
         instance.id = instance.node.peerId.toString();

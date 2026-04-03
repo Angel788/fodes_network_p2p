@@ -12,12 +12,11 @@ import { dcutr } from '@libp2p/dcutr'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { autoNAT } from '@libp2p/autonat'
 export class NormalNode extends NodeLibp2p {
-    public static async create(ip: string, bootstrapIp: string): Promise<NormalNode> {
+    static async create(ip: string, bootstrapIp: string): Promise<NormalNode> {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
                 listen: ['/ip4/0.0.0.0/tcp/1080'],
-                announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [
                 tcp(),
@@ -26,9 +25,8 @@ export class NormalNode extends NodeLibp2p {
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
             peerDiscovery: [
-                bootstrap({ list: [bootstrapIp] }),
+                bootstrap({ list: [bootstrapIp] })
             ],
-
             services: {
                 identify: identify(),
                 identifyPush: identifyPush(),
@@ -36,8 +34,7 @@ export class NormalNode extends NodeLibp2p {
                 autonat: autoNAT(),
                 dht: kadDHT({
                     protocol: '/fodes',
-                    clientMode: false,
-                    kBucketSize: 20
+                    clientMode: true,
                 }),
                 dcutr: dcutr()
             }
