@@ -24,6 +24,7 @@ export class NormalNode extends NodeLibp2p {
             ],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
+            peerDiscovery: [],
             services: {
                 identify: identify(),
                 identifyPush: identifyPush(),
