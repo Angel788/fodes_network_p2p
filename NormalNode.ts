@@ -2,7 +2,7 @@
 import { NormalNode } from "./modules/Node/NormalNode.js"
 //import axios from 'axios';
 import { NodeGateway } from "./NormalNodeModules/NodeGateway.js";
-
+import { getPublicIp } from "./NormalNodeModules/ip.js"
 interface DireccionLibp2p {
     BoostrapNode: string
 }
@@ -10,10 +10,11 @@ interface DireccionLibp2p {
 
 const main = async () => {
     try {
-        const node = await NormalNode.create();
+        const ip = await getPublicIp()
+        const node = await NormalNode.create(ip);
         const nodeGateway = new NodeGateway(node)
         console.log(node.getMultiaddrs());
-        const dir = '/ip4/136.113.56.80/tcp/1080/p2p/12D3KooWCaemvby69LXhzxF5kdJW5HhtEie4wLqkdsG7XcWZosjU';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
+        const dir = '/ip4/136.113.56.80/tcp/1080/p2p/12D3KooWKDBoRYcHqpLfjYfGQJcYQYjJSWsn8LhkbQ7VTbtPYuiy';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
         node.contact(dir);
     } catch (error) {
         console.log(error)

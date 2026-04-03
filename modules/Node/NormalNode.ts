@@ -10,11 +10,12 @@ import { NodeLibp2p } from './NodeLibp2p.js'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 export class NormalNode extends NodeLibp2p {
-    public static async create(): Promise<NormalNode> {
+    public static async create(ip: string): Promise<NormalNode> {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080']
+                listen: ['/ip4/0.0.0.0/tcp/1080'],
+                announce: ['/ip4/' + ip + '/tcp/1080']
             },
             transports: [tcp(), circuitRelayTransport()],
             streamMuxers: [yamux()],
