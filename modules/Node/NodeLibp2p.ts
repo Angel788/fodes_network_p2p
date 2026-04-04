@@ -69,7 +69,7 @@ export class NodeLibp2p {
             try {
                 const kad = this.node.services.dht as KadDHT
                 for await (const event of kad.provide(cid)) {
-                    console.log(event);
+                    //console.log(event);
                 }
             } catch (err) {
                 console.log("Lo semntimos hubo un error al aunicar el CID: ", err)
@@ -88,8 +88,9 @@ export class NodeLibp2p {
                     try {
                         const cidUtils = new CIDUtils();
                         const idProvider = provider.id;
-                        console.log(idProvider.toString())
-                        console.log(this.id)
+                        //console.log(idProvider.toString())
+                        //console.log(this.id)
+                        console.log(protocol, idProvider)
                         if (idProvider.toString() == this.id) {
                             const res = (await this.nodeDb.getContent(targetCID)).data;
                             console.log(res)

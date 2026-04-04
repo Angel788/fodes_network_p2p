@@ -41,7 +41,7 @@ export class NormalNode extends NodeLibp2p {
         instance.id = instance.node.peerId.toString();
 
         await instance.node.start();
-        instance.nodeDb.initDb();
+        await instance.nodeDb.initDb();
 
         return instance;
     }
