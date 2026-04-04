@@ -13,7 +13,7 @@ const main = async () => {
     try {
         const psk = readFileSync('./swarm.key');
         const ip6 = await getLocalIPv6()
-        const dir = '/ip4/34.46.84.169/tcp/1080/p2p/12D3KooWLRfydkpP2PGKr6onzcoXJre6Vm6tR41cKTZF9CR52C6j';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
+        const dir = '/ip4/136.111.150.103/tcp/1080/p2p/12D3KooWBRRcJTzjPASozTyqZoDt4oEj8Ye3pLDYyB7RQJgSTPbp';//await axios.get<DireccionLibp2p>('http://192.168.1.67:8000/directionBoostrapNode');
         const node = await NormalNode.create(ip6, psk);
         const nodeGateway = new NodeGateway(node)
         console.log(node.getDirections());
