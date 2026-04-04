@@ -11,8 +11,9 @@ import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { autoNAT } from '@libp2p/autonat'
 import { mdns } from '@libp2p/mdns'
+import { preSharedKey } from '@libp2p/pnet';
 export class NormalNode extends NodeLibp2p {
-    static async create(ip: string, bootstrapIp: string): Promise<NormalNode> {
+    static async create(ip: string, psk: Uint8Array): Promise<NormalNode> {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
@@ -36,7 +37,10 @@ export class NormalNode extends NodeLibp2p {
                 }),
                 autonat: autoNAT(),
                 dcutr: dcutr()
-            }
+            },
+            connectionProtector: preSharedKey({
+                psk: psk
+            })
         });
         instance.id = instance.node.peerId.toString();
         instance.start()

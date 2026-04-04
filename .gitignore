@@ -40,3 +40,8 @@ LOCK
 # =========================================
 .DS_Store
 Thumbs.db
+
+#  
+# Clave secreta de la red
+#
+swarm.key

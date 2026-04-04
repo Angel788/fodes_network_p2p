@@ -8,9 +8,9 @@ import { kadDHT } from '@libp2p/kad-dht'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { autoNAT } from '@libp2p/autonat'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
-
+import { preSharedKey } from '@libp2p/pnet';
 export class CentralNode extends NodeLibp2p {
-    public static async create(ip: string): Promise<CentralNode> {
+    public static async create(ip: string, psk: Uint8Array): Promise<CentralNode> {
         const instance = new CentralNode();
         instance.node = await createLibp2p({
             addresses: {
@@ -30,11 +30,14 @@ export class CentralNode extends NodeLibp2p {
                 }),
                 autoNAT: autoNAT(),
                 relay: circuitRelayServer()
-            }
+            },
+            connectionProtector: preSharedKey({
+                psk: psk
+            })
         });
         instance.id = instance.node.peerId.toString();
 
-        await instance.node.start();
+        await instance.start();
         await instance.nodeDb.initDb();
 
         return instance;

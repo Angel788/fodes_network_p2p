@@ -32,8 +32,8 @@ export class NodeLibp2p {
     public getDb(): NodeDbManager {
         return this.nodeDb;
     }
-    public start() {
-        this.node.start();
+    public async start() {
+        await this.node.start();
         this.protocolComents = new ProtocolLibp2p(this.node, this.direccionCommentProtocol, 'COMENTARIOS', this.getDb());
         this.protocolPublication = new ProtocolLibp2p(this.node, this.direccionPublicationProtocol, 'PUBLICACIONES', this.getDb());
         this.startProtocols();
