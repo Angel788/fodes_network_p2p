@@ -32,6 +32,7 @@ export class NodeLibp2p {
     public startProtocols() {
         this.protocolComents.initProcol();
         this.protocolPublication.initProcol();
+        this.protocolReplication.initProcol();
     }
     public getDb(): NodeDbManager {
         return this.nodeDb;
