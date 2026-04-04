@@ -37,16 +37,6 @@ export class NodeLibp2p {
         this.protocolComents = new ProtocolLibp2p(this.node, this.direccionCommentProtocol, 'COMENTARIOS', this.getDb());
         this.protocolPublication = new ProtocolLibp2p(this.node, this.direccionPublicationProtocol, 'PUBLICACIONES', this.getDb());
         this.startProtocols();
-        this.node.addEventListener('peer:discovery', async (evt) => {
-            const peerId = evt.detail.id
-            console.log('Veo a un nuevo nodo')
-            try {
-                await this.node.dial(peerId)
-                console.log("Conectado el nuevo nodo")
-            } catch (err) {
-                console.log(err)
-            }
-        });
     }
     public async saveContent(cid: string, data: JSON) {
         if (!this.node) { return; }

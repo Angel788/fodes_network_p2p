@@ -13,7 +13,7 @@ export class ProtocolLibp2p {
         this.dbManager = dbManger;
     }
     public initProcol() {
-        this.node.handle(this.direction, (stream) => {
+        this.node.handle(this.direction,  (stream) => {
             Promise.resolve().then(async () => {
                 try {
                     const lp = lpStream(stream);
