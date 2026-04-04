@@ -39,16 +39,12 @@ export class NodeGateway {
             socket.on("ui:post_comment", async (cidComment: string, data: JSON, callBack: (res: ContetResponse) => void) => {
                 await this.postComment(cidComment, data, callBack);
             })
-
-            /*
-            TODO
             socket.on("ui:replicate_publication", async (cidPublication: string, data: JSON, callBack: (res: ContetResponse) => void) => {
                 await this.replicatePublication(cidPublication, data, callBack);
             })
             socket.on("ui:replicate_comment", async (cidComment: string, data: JSON, callBack: (res: ContetResponse) => void) => {
                 await this.repiclateComment(cidComment, data, callBack);
             })
-            * */
         })
     }
     //postContent
@@ -120,10 +116,7 @@ export class NodeGateway {
     //TODO: replicateContet
     private async replicateContent(cidContent: string, data: JSON, callBack: (res: ContetResponse) => void) {
         try {
-            /*
-              TODO: Logica de Replicacion
-              await this.normalNode.replicate(cidContent,data);
-             */
+            this.normalNode.replicate(cidContent, data);
             callBack({
                 success: true,
                 cid_content: cidContent,

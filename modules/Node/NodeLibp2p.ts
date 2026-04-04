@@ -1,6 +1,7 @@
 import { Libp2p } from "@libp2p/interface";
 import { multiaddr, Multiaddr } from "@multiformats/multiaddr";
-import { ProtocolLibp2p } from "../Protocols/Libp2p/ProtocolLibp2p.js"
+import { ComunicationProtocol } from "../Protocols/Comunication/ComunicationProtocol.js"
+import { ReplicationProtocol } from "../Protocols/Replication/ReplicationProtocol.js"
 import { CID } from 'multiformats'
 import { lpStream } from '@libp2p/utils'
 import { KadDHT } from '@libp2p/kad-dht';
@@ -10,13 +11,16 @@ export class NodeLibp2p {
     public id!: string
     public node!: Libp2p;
     private direccionCommentProtocol: string;
-    private protocolComents: ProtocolLibp2p;
+    private protocolComents: ComunicationProtocol;
     private direccionPublicationProtocol: string;
-    private protocolPublication: ProtocolLibp2p;
+    private protocolPublication: ComunicationProtocol;
     protected nodeDb: NodeDbManager;
+    private direccionReplicationProtocol: string;
+    private protocolReplication: ReplicationProtocol;
     constructor() {
         this.direccionCommentProtocol = '/forum/comments/1.0.0';
         this.direccionPublicationProtocol = '/forum/posts/1.0.0';
+        this.direccionReplicationProtocol = '/forum/replication/1.0.0';
         this.nodeDb = new NodeDbManager()
     }
     public getMultiaddrs(): Multiaddr[] {
@@ -34,8 +38,9 @@ export class NodeLibp2p {
     }
     public async start() {
         await this.node.start();
-        this.protocolComents = new ProtocolLibp2p(this.node, this.direccionCommentProtocol, 'COMENTARIOS', this.getDb());
-        this.protocolPublication = new ProtocolLibp2p(this.node, this.direccionPublicationProtocol, 'PUBLICACIONES', this.getDb());
+        this.protocolComents = new ComunicationProtocol(this.node, this.direccionCommentProtocol, 'COMENTARIOS', this.getDb());
+        this.protocolPublication = new ComunicationProtocol(this.node, this.direccionPublicationProtocol, 'PUBLICACIONES', this.getDb());
+        this.protocolReplication = new ReplicationProtocol(this, this.direccionReplicationProtocol, 'REPLICATION', this.getDb());
         this.startProtocols();
     }
     public async saveContent(cid: string, data: JSON) {
@@ -125,46 +130,37 @@ export class NodeLibp2p {
     }
     public async replicate(cidContent: string, data: JSON) {
         try {
-            //Todo
+            const idBytes = this.node.peerId.toMultihash().bytes
+            for await (const nodeCloser of this.node.peerRouting.getClosestPeers(idBytes)) {
+                try {
+                    const idCloserNode = nodeCloser.id
+                    const stream = await this.node.dialProtocol(idCloserNode, this.direccionReplicationProtocol);
+                    const lp = lpStream(stream);
+                    lp.write(new TextEncoder().encode(JSON.stringify({
+                        'cid': cidContent,
+                        "data": data
+                    })))
+                    const res = await lp.read()
+                    const output = new TextDecoder().decode(res.subarray());
+                } catch (error) {
+                    console.log("Hubo un error al contactar al vecino mas cercano: " + error);
+                }
+            }
         } catch (error) {
-
+            console.log("Hubo un error al replicar: " + error);
         }
     }
-    public async imprimirEstadoDeLaRed() {
-        console.log("\n==========================================");
-        console.log("🔍 ESTADO DE MI DIRECTORIO P2P");
-        console.log("==========================================");
-
-        // 1. Ver todas las conexiones activas (El tubo físico está abierto)
-        const conexiones = this.node.getConnections();
-        console.log(`🟢 Conexiones activas actuales: ${conexiones.length}`);
-        conexiones.forEach(conn => {
-            console.log(`   -> Conectado a: ${conn.remotePeer.toString()}`);
-        });
-
-        console.log("------------------------------------------");
-
-        // 2. Ver el Peer Store (El DHT: Todos los nodos de los que he oído hablar)
-        const nodosConocidos = await this.node.peerStore.all();
-
-        // Filtramos para no contarnos a nosotros mismos
-        const vecinos = nodosConocidos.filter(peer => peer.id.toString() !== this.id);
-
-        console.log(`📚 Nodos totales en mi directorio (K-Buckets): ${vecinos.length}`);
-
-        vecinos.forEach(vecino => {
-            console.log(`   🆔 ID: ${vecino.id.toString()}`);
-
-            // Imprimir las direcciones públicas/privadas que conocemos de este vecino
-            if (vecino.addresses.length > 0) {
-                console.log(`      📍 Direcciones conocidas:`);
-                vecino.addresses.forEach(addr => {
-                    console.log(`         - ${addr.multiaddr.toString()}`);
-                });
-            } else {
-                console.log(`      ⚠️ Sin direcciones (Solo sabemos que existe)`);
+    public async provideCurrentContentSavedInDb() {
+        try {
+            const dbIterator = this.nodeDb.getDb().iterator()
+            for await (const [key, value] of dbIterator) {
+                if (key.startsWith("bagaaierai")) {
+                    this.provideContent(key);
+                    console.log(key);
+                }
             }
-        });
-        console.log("==========================================\n");
+        } catch (error) {
+            console.log("Hubo un error al anuciar el contenido en  actual en la base de datos: " + error);
+        }
     }
 }

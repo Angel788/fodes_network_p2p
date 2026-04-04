@@ -8,6 +8,7 @@ const main = async () => {
         const psk = readFileSync('./swarm.key');
         const ip = await getPublicIP()
         const node = await CentralNode.create(ip, psk);
+        node.provideCurrentContentSavedInDb();
         console.log(node.getDirections())
         //const redisClient = RedisClient.getInstance();
         //(await redisClient).set("BoostrapNode", node.getMultiaddrs()[0].toString());
