@@ -69,6 +69,7 @@ export class NodeLibp2p {
             try {
                 const kad = this.node.services.dht as KadDHT
                 for await (const event of kad.provide(cid)) {
+                    console.log(event);
                 }
             } catch (err) {
                 console.log("Lo semntimos hubo un error al aunicar el CID: ", err)
