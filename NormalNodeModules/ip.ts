@@ -6,6 +6,7 @@ export function getLocalIPv6(): string | null {
     for (const interfaces of Object.values(nets)) {
         for (const net of interfaces ?? []) {
             // Filtra loopback y link-local (fe80::)
+            console.log(net.address)
             if (net.family === 'IPv6' && !net.internal && !net.address.startsWith('fe80')) {
                 return net.address;
             }

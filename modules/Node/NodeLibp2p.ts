@@ -155,7 +155,7 @@ export class NodeLibp2p {
         try {
             const dbIterator = this.nodeDb.getDb().iterator()
             for await (const [key, value] of dbIterator) {
-                if (key.startsWith("bagaaierai")) {
+                if (key.startsWith("bagaaiera")) {
                     this.provideContent(key);
                     console.log(key);
                 }
