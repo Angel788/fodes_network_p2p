@@ -91,6 +91,7 @@ export class NodeLibp2p {
                             const res = (await this.nodeDb.getContent(targetCID)).data;
                             console.log(res)
                             const cidReponse = await (await cidUtils.convertJsontoCID(res)).toString();
+                            console.log(targetCID, cidReponse)
                             if (targetCID == cidReponse) {
                                 console.log("Publicacion Encontrada");
                                 return res;
