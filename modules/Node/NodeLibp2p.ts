@@ -96,18 +96,19 @@ export class NodeLibp2p {
                                 console.log("Publicacion Encontrada");
                                 return res;
                             }
-                        }
-                        const stream = await this.node.dialProtocol(idProvider, protocol);
-                        const lp = lpStream(stream);
-                        lp.write(new TextEncoder().encode(JSON.stringify({
-                            'cid': targetCID
-                        })))
-                        const res = await lp.read()
-                        const output = new TextDecoder().decode(res.subarray());
-                        const cidReponse = await (await cidUtils.convertJsontoCID(JSON.parse(output))).toString();
-                        if (cidReponse == targetCID) {
-                            console.log("Publicacion Encontrada");
-                            return JSON.parse(output);
+                        } else {
+                            const stream = await this.node.dialProtocol(idProvider, protocol);
+                            const lp = lpStream(stream);
+                            lp.write(new TextEncoder().encode(JSON.stringify({
+                                'cid': targetCID
+                            })))
+                            const res = await lp.read()
+                            const output = new TextDecoder().decode(res.subarray());
+                            const cidReponse = await (await cidUtils.convertJsontoCID(JSON.parse(output))).toString();
+                            if (cidReponse == targetCID) {
+                                console.log("Publicacion Encontrada");
+                                return JSON.parse(output);
+                            }
                         }
                     }
                     catch (err) {

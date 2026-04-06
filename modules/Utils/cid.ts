@@ -1,35 +1,30 @@
 import { CID } from 'multiformats'
 import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
-
 export class CIDUtils {
     public async convertJsontoCID(data: any): Promise<CID> {
+        const sortObject = (obj: any): any => {
+            if (obj === null || typeof obj !== 'object') return obj;
+            if (Array.isArray(obj)) return obj.map(sortObject);
+            return Object.keys(obj).sort().reduce((result: any, key) => {
+                result[key] = sortObject(obj[key]);
+                return result;
+            }, {});
+        };
+
         try {
-            // 1. Ordenar las llaves del objeto para asegurar determinismo
-            const sortedData = this.sortObject(data);
+            // 1. Normalizar (convertir Dates a strings, etc.) y ordenar llaves
+            const normalized = JSON.parse(JSON.stringify(data));
+            const sortedData = sortObject(normalized);
 
-            // 2. Codificar a bytes
+            // 2. Codificar y Hashear
             const bytes = json.encode(sortedData);
-
-            // 3. Generar Hash y CID
             const hash = await sha256.digest(bytes);
-            const cid = CID.create(1, json.code, hash);
 
-            return cid;
+            // 3. Crear CIDv1 con codec JSON (0x0200)
+            return CID.create(1, json.code, hash);
         } catch (err) {
-            console.error("Error al generar CID: ", err);
-            throw err;
+            throw new Error(`Error generando CID: ${err instanceof Error ? err.message : String(err)}`);
         }
-    }
-
-    // Función auxiliar para asegurar que el JSON siempre tenga el mismo orden
-    private sortObject(obj: any): any {
-        if (obj === null || typeof obj !== 'object') return obj;
-        if (Array.isArray(obj)) return obj.map(this.sortObject.bind(this));
-
-        return Object.keys(obj).sort().reduce((result: any, key) => {
-            result[key] = this.sortObject(obj[key]);
-            return result;
-        }, {});
     }
 }
