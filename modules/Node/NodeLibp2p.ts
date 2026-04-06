@@ -83,7 +83,7 @@ export class NodeLibp2p {
                 for await (const provider of this.node.contentRouting.findProviders(cid)) {
                     try {
                         const cidUtils = new CIDUtils();
-                        const idProvider = provider.id;
+                        const idProvider = await provider.id;
                         //console.log(idProvider.toString())
                         //console.log(this.id)
                         console.log(protocol, idProvider)
