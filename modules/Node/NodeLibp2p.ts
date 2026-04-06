@@ -87,7 +87,7 @@ export class NodeLibp2p {
                         //console.log(idProvider.toString())
                         //console.log(this.id)
                         console.log(protocol, idProvider)
-                        /*if (idProvider.toString() == this.id) {
+                        if (idProvider.toString() == this.id) {
                             const res = (await this.nodeDb.getContent(targetCID)).data;
                             console.log(res)
                             const cidReponse = await (await cidUtils.convertJsontoCID(res)).toString();
@@ -107,7 +107,7 @@ export class NodeLibp2p {
                         if (cidReponse == targetCID) {
                             console.log("Publicacion Encontrada");
                             return JSON.parse(output);
-                        }*/
+                        }
                     }
                     catch (err) {
                         console.log("Hubo un error en la constulta: ", err);
