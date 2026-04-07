@@ -98,7 +98,7 @@ export class NodeLibp2p {
                             }
                         } else {
                             const stream = await this.node.dialProtocol(idProvider, protocol, {
-                                signal: AbortSignal.timeout(3000)
+                                signal: AbortSignal.timeout(10000)
                             });
                             const lp = lpStream(stream);
                             lp.write(new TextEncoder().encode(JSON.stringify({
@@ -124,7 +124,7 @@ export class NodeLibp2p {
         } catch (err) {
             console.log("Hubo un erro al hacer la consulta del CID " + err)
         }
-        return JSON.parse("");
+        return null;
     }
     public async contact(libp2Direction: string) {
         try {
