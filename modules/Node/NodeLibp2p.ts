@@ -97,7 +97,9 @@ export class NodeLibp2p {
                                 return res;
                             }
                         } else {
-                            const stream = await this.node.dialProtocol(idProvider, protocol);
+                            const stream = await this.node.dialProtocol(idProvider, protocol, {
+                                signal: AbortSignal.timeout(3000)
+                            });
                             const lp = lpStream(stream);
                             lp.write(new TextEncoder().encode(JSON.stringify({
                                 'cid': targetCID
@@ -138,7 +140,9 @@ export class NodeLibp2p {
             for await (const nodeCloser of this.node.peerRouting.getClosestPeers(idBytes)) {
                 try {
                     const idCloserNode = nodeCloser.id
-                    const stream = await this.node.dialProtocol(idCloserNode, this.direccionReplicationProtocol);
+                    const stream = await this.node.dialProtocol(idCloserNode, this.direccionReplicationProtocol, {
+                        signal: AbortSignal.timeout(3000)
+                    });
                     const lp = lpStream(stream);
                     lp.write(new TextEncoder().encode(JSON.stringify({
                         'cid': cidContent,
