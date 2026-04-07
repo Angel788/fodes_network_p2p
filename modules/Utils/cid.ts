@@ -5,7 +5,8 @@ import * as dagCbor from '@ipld/dag-cbor'
 export class CIDUtils {
     public async convertJsontoCID(data: any): Promise<string> {
         try {
-            const bytes = dagCbor.encode(data)
+            const cleanData = JSON.parse(JSON.stringify(data));
+            const bytes = dagCbor.encode(cleanData)
             const hash = await sha256.digest(bytes);
             const cid = CID.create(1, dagCbor.code, hash);
             return cid.toString();
