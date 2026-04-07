@@ -122,6 +122,7 @@ export class NodeLibp2p {
         } catch (err) {
             console.log("Hubo un erro al hacer la consulta del CID " + err)
         }
+        return JSON.parse("");
     }
     public async contact(libp2Direction: string) {
         try {
@@ -157,7 +158,7 @@ export class NodeLibp2p {
         try {
             const dbIterator = this.nodeDb.getDb().iterator()
             for await (const [key, value] of dbIterator) {
-                if (key.startsWith("bagaaiera")) {
+                if (key.startsWith("bafyrei")) {
                     this.provideContent(key);
                     console.log(key);
                 }
