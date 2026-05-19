@@ -8,7 +8,7 @@ import { kadDHT } from '@libp2p/kad-dht'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { autoNAT } from '@libp2p/autonat'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
-import { preSharedKey } from '@libp2p/pnet';
+import { preSharedKey } from '@libp2p/pnet'
 export class CentralNode extends NodeLibp2p {
     public static async create(ip: string, psk: Uint8Array): Promise<CentralNode> {
         const instance = new CentralNode();
