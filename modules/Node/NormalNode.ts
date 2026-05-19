@@ -5,7 +5,6 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify, identifyPush } from '@libp2p/identify'
 import { ping } from '@libp2p/ping'
 import { kadDHT } from '@libp2p/kad-dht';
-import { bootstrap } from '@libp2p/bootstrap'
 import { NodeLibp2p } from './NodeLibp2p.js'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
