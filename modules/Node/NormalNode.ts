@@ -21,9 +21,7 @@ export class NormalNode extends NodeLibp2p {
             },
             transports: [
                 tcp(),
-                circuitRelayTransport({
-                    discoverRelays: 1  // Auto-registrar con el Bootstrap como relay server
-                })
+                circuitRelayTransport()
             ],
             streamMuxers: [yamux()],
             connectionEncrypters: [noise()],
