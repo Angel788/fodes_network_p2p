@@ -10,12 +10,17 @@ import { autoNAT } from '@libp2p/autonat'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { preSharedKey } from '@libp2p/pnet'
 export class CentralNode extends NodeLibp2p {
-    public static async create(ip: string, psk: Uint8Array): Promise<CentralNode> {
+    public static async create(ip4: string, psk: Uint8Array, ip6: string | null = null): Promise<CentralNode> {
         const instance = new CentralNode();
+
+        const listenAddrs  = ['/ip4/0.0.0.0/tcp/1080', '/ip6/::/tcp/1080'];
+        const announceAddrs = ['/ip4/' + ip4 + '/tcp/1080'];
+        if (ip6) announceAddrs.push('/ip6/' + ip6 + '/tcp/1080');
+
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080'],
-                announce: ['/ip4/' + ip + '/tcp/1080']
+                listen:   listenAddrs,
+                announce: announceAddrs
             },
             transports: [tcp()],
             streamMuxers: [yamux()],
