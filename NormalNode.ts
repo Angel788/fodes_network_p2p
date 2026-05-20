@@ -19,6 +19,7 @@ const main = async () => {
         console.log(node.getDirections());
         await node.contact(dir);
         await node.provideCurrentContentSavedInDb();
+        node.node.dial()
         setInterval(async () => {
             //node.imprimirEstadoDeLaRed();
         }, 5000);

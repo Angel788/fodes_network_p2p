@@ -53,7 +53,13 @@ export class CentralNode extends NodeLibp2p {
                     clientMode: false
                 }),
                 autoNAT: autoNAT(),
-                relay: circuitRelayServer()
+                relay: circuitRelayServer({
+                    advertise: true,          // Se anuncia en la DHT como relay server
+                    reservations: {
+                        maxReservations: 200,
+                        reservationTtl: 7200000  // 2 horas
+                    }
+                })
             },
             connectionProtector: preSharedKey({
                 psk: psk
