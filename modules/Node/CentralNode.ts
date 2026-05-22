@@ -12,6 +12,9 @@ import { preSharedKey } from '@libp2p/pnet'
 import { keys } from '@libp2p/crypto'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
+import { PeerId } from '@libp2p/interface'
+import { SyncProtocol } from '../Protocols/Sync/SyncProtocol.js'
+import { AnnounceProtocol } from '../Protocols/Announce/AnnounceProtocol.js'
 
 async function loadOrCreatePrivateKey(dbPath: string = '.db'): Promise<Awaited<ReturnType<typeof keys.generateKeyPair>>> {
     mkdirSync(path.resolve(dbPath), { recursive: true })
@@ -69,6 +72,19 @@ export class CentralNode extends NodeLibp2p {
 
         await instance.start();
         await instance.nodeDb.initDb();
+
+        // Protocolos de relay: el bootstrap almacena y reenvía contenido entre nodos
+        const syncProtocol     = new SyncProtocol(instance.node, instance.nodeDb)
+        const announceProtocol = new AnnounceProtocol(instance.node)
+        syncProtocol.init()
+        announceProtocol.init()
+
+        // Cuando un nodo se conecta, empujar todo el contenido almacenado
+        instance.node.addEventListener('peer:connect', (evt) => {
+            const peerId = evt.detail as PeerId
+            console.log(`[Bootstrap] Peer conectado: ${peerId.toString()} — enviando contenido almacenado`)
+            setTimeout(() => syncProtocol.pushAllContentToPeer(peerId), 2000)
+        })
 
         return instance;
     }
