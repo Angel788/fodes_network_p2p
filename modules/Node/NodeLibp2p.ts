@@ -78,43 +78,44 @@ export class NodeLibp2p {
         if (!this.node) { return; }
         try {
             const cid = CID.parse(targetCID);
+            let providersFound = 0;
             try {
                 for await (const provider of this.node.contentRouting.findProviders(cid)) {
+                    providersFound++;
                     try {
                         const cidUtils = new CIDUtils();
                         const idProvider = await provider.id;
-                        //console.log(idProvider.toString())
-                        //console.log(this.id)
-                        console.log(protocol, idProvider)
+                        console.log(`[Query] Proveedor #${providersFound} encontrado para ${targetCID.slice(-6)}: ${idProvider.toString()}`);
+                        
                         if (idProvider.toString() == this.id) {
                             const res = (await this.nodeDb.getContent(targetCID)).data;
-                            console.log(res)
-                            const cidReponse = await (await cidUtils.convertJsontoCID(res)).toString();
-                            console.log(targetCID, cidReponse)
-                            if (targetCID == cidReponse) {
-                                console.log("Publicacion Encontrada");
-                                return res;
-                            }
+                            return res;
                         } else {
                             const stream = await this.node.dialProtocol(idProvider, protocol, {
-                                signal: AbortSignal.timeout(10000)
+                                signal: AbortSignal.timeout(15000)
                             });
                             const lp = lpStream(stream);
                             lp.write(new TextEncoder().encode(JSON.stringify({
                                 'cid': targetCID
                             })))
                             const res = await lp.read()
+                            if (!res) continue;
                             const output = new TextDecoder().decode(res.subarray());
-                            const cidReponse = await (await cidUtils.convertJsontoCID(JSON.parse(output))).toString();
+                            const jsonRes = JSON.parse(output);
+                            const cidReponse = await (await cidUtils.convertJsontoCID(jsonRes)).toString();
                             if (cidReponse == targetCID) {
-                                console.log("Publicacion Encontrada");
-                                return JSON.parse(output);
+                                console.log(`[Success] Contenido obtenido de ${idProvider.toString()}`);
+                                return jsonRes;
                             }
                         }
                     }
                     catch (err) {
-                        console.log("Hubo un error en la constulta: ", err);
+                        // console.log("Hubo un error en la consulta a un proveedor: ", err);
                     }
+                }
+                
+                if (providersFound === 0) {
+                    console.log(`[Warn] No se encontraron proveedores para el CID: ${targetCID.slice(-6)}`);
                 }
 
             } catch (err) {

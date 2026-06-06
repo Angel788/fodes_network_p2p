@@ -6,7 +6,7 @@ import { pathToFileURL, fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const NUM_NODES = 40 // Ajustable a 500
 const BASE_PORT = 10000
-const STARTUP_DELAY_MS = 1000
+const STARTUP_DELAY_MS = 500 // Reducido para agilizar el arranque masivo
 const OUTPUT_FILE = path.join(__dirname, 'benchmark_results.csv')
 const SEARCH_LOG = path.join(__dirname, 'search_latencies.csv')
 
@@ -18,10 +18,12 @@ async function runBenchmark() {
     console.log(`Iniciando prueba de rendimiento determinista (${NUM_NODES} nodos)...`)
 
     const activeNodes: Map<number, any> = new Map()
+    const nodeAddrs: string[] = []
     const escomBootstrap = '/ip4/136.111.150.103/tcp/1080/p2p/12D3KooWCUn4CPAQF38fLag8dqYGaXkx8MXhFjdrBLEJWv7eixyg'
     const allMetrics: any[] = []
     const searchLatencies: any[] = []
     
+    let nodesReady = 0
     let nodesFinished = 0
 
     // Preparar archivos
@@ -44,6 +46,8 @@ async function runBenchmark() {
 
             child.on('message', (msg: any) => {
                 if (msg.type === 'ready') {
+                    if (msg.multiaddr) nodeAddrs.push(msg.multiaddr)
+                    nodesReady++
                     resolve(child)
                 } else if (msg.type === 'metrics') {
                     allMetrics.push(msg.data)
@@ -65,16 +69,37 @@ async function runBenchmark() {
         })
     }
 
-    // Iniciar TODOS los nodos conectados directamente al Bootstrap ESCOM
-    console.log(`Conectando todos los nodos a: ${escomBootstrap}`)
+    // 1. Iniciar TODOS los procesos (solo se conectan al Bootstrap inicialmente)
+    console.log(`[Runner] Spawning ${NUM_NODES} nodos...`)
     for (let i = 0; i < NUM_NODES; i++) {
-        await spawnNode(i, escomBootstrap)
+        spawnNode(i, escomBootstrap)
         await new Promise(r => setTimeout(r, STARTUP_DELAY_MS))
+    }
+
+    // 2. Esperar a que todos estén listos (hayan enviado su multiaddr)
+    console.log('[Runner] Esperando a que todos los nodos estén listos...')
+    while(nodesReady < NUM_NODES) {
+        await new Promise(r => setTimeout(r, 1000))
+    }
+
+    // 3. Enviar lista de nodos a todos para forzar conexión directa (Mesh)
+    console.log('🔗 [Runner] Conectando nodos entre sí...')
+    for (const child of activeNodes.values()) {
+        child.send({ type: 'all_nodes', addrs: nodeAddrs })
+    }
+
+    // 4. Pequeña pausa para que se establezcan las conexiones directas
+    await new Promise(r => setTimeout(r, 5000))
+
+    // 5. Enviar señal de inicio de prueba
+    console.log('🚀 [Runner] ¡Iniciando Test!')
+    for (const child of activeNodes.values()) {
+        child.send({ type: 'start' })
     }
 
     console.log(`Red activa. Esperando a que todos los nodos finalicen sus consultas...`)
 
-    // Esperar hasta que todos reporten haber terminado sus consultas
+    // 6. Esperar hasta que todos reporten haber terminado sus consultas
     while(nodesFinished < NUM_NODES) {
         await new Promise(r => setTimeout(r, 1000))
     }

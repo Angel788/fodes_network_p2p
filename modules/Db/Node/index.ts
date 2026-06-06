@@ -5,10 +5,15 @@ import path from 'path';
 export class NodeDbManager {
     private db: ClassicLevel
     constructor() {
-        this.db = new ClassicLevel(path.resolve(".db"), { valueEncoding: 'json' })
+        const dbPath = process.env.GATEWAY_USER_DATA || ".db";
+        console.log(`[DbManager] Initializing database at: ${path.resolve(dbPath)}`);
+        this.db = new ClassicLevel(path.resolve(dbPath), { valueEncoding: 'json' })
     }
     public async initDb() {
         await this.db.open();
+    }
+    public async close() {
+        await this.db.close();
     }
     public getDb() {
         return this.db;
