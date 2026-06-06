@@ -16,6 +16,7 @@ export class ComunicationProtocol {
         this.node.handle(this.direction, (stream) => {
             Promise.resolve().then(async () => {
                 try {
+                    console.log("yyy")
                     const lp = lpStream(stream);
                     const req = await lp.read();
                     const query = JSON.parse(new TextDecoder().decode(req.subarray()));

@@ -47,7 +47,7 @@ export class NodeLibp2p {
     public async saveContent(cid: string, data: JSON) {
         if (!this.node) { return; }
         try {
-            const responseSaveContentNode = this.nodeDb.seaveContent(cid, data);
+            const responseSaveContentNode = this.nodeDb.saveContent(cid, data);
             if ((await responseSaveContentNode).error) {
                 console.log("Lo sentimos hubo un error: ", (await responseSaveContentNode).message);
             } else {
@@ -65,7 +65,6 @@ export class NodeLibp2p {
             try {
                 const kad = this.node.services.dht as KadDHT
                 for await (const event of kad.provide(cid)) {
-                    //console.log(event);
                 }
             } catch (err) {
                 console.log("Lo semntimos hubo un error al aunicar el CID: ", err)
