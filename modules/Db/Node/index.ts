@@ -13,14 +13,7 @@ export class NodeDbManager {
     public getDb() {
         return this.db;
     }
-<<<<<<< HEAD
-    public async saveContent(hash: string, data: JSON): Promise<DbResponse> {
-=======
     public async saveContent(hash: string, data: any): Promise<DbResponse> {
-        return this.seaveContent(hash, data)
-    }
-    public async seaveContent(hash: string, data: JSON): Promise<DbResponse> {
->>>>>>> 57fc725797cfa721f475e3598da3110ea24f0bd6
         try {
             await this.db.put(hash, JSON.stringify(data))
             return {

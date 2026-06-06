@@ -5,7 +5,7 @@ import { NormalNode } from '../modules/Node/NormalNode.js'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const projectRoot = path.resolve(__dirname, '../..')
+const projectRoot = path.resolve(__dirname, '..')
 
 const port = parseInt(process.argv[2]) || 11001
 const bootstrapAddr = process.argv[3]
@@ -15,7 +15,7 @@ async function run() {
     const mockDataPath = path.join(__dirname, 'mock_publications_200.json')
     const mockData = JSON.parse(fs.readFileSync(mockDataPath, 'utf-8'))
 
-    const swarmKeyPath = path.join(projectRoot, 'gateway', 'swarm.key')
+    const swarmKeyPath = path.join(projectRoot, 'swarm.key')
     const psk = fs.readFileSync(swarmKeyPath)
 
     const userDir = path.join(__dirname, 'dbs', `quick_node_${nodeIndex}`)
@@ -24,7 +24,7 @@ async function run() {
     if (fs.existsSync(userDir)) fs.rmSync(userDir, { recursive: true, force: true })
     fs.mkdirSync(userDir, { recursive: true })
 
-    const node = await NormalNode.create(psk, bootstrapAddr, port)
+    const node = await NormalNode.create(null, psk, port)
     
     if (bootstrapAddr) {
         try {

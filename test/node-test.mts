@@ -6,7 +6,7 @@ import { NormalNode } from '../modules/Node/NormalNode.js'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const projectRoot = path.resolve(__dirname, '../..')
+const projectRoot = path.resolve(__dirname, '..')
 
 // Configuración desde argumentos
 const port = parseInt(process.argv[2]) || 1080
@@ -19,7 +19,7 @@ async function run() {
     const mockData = JSON.parse(fs.readFileSync(mockDataPath, 'utf-8'))
 
     // 1. Cargar PSK
-    const swarmKeyPath = path.join(projectRoot, 'gateway', 'swarm.key')
+    const swarmKeyPath = path.join(projectRoot, 'swarm.key')
     const psk = fs.readFileSync(swarmKeyPath)
 
     // 2. Configurar DB (LevelDB)
@@ -31,7 +31,7 @@ async function run() {
     fs.mkdirSync(userDir, { recursive: true })
 
     // 3. Iniciar NormalNode
-    const node = await NormalNode.create(psk, bootstrapAddr, port)
+    const node = await NormalNode.create(null, psk, port)
     
     if (bootstrapAddr) {
         try {

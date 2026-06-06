@@ -12,12 +12,12 @@ import { autoNAT } from '@libp2p/autonat'
 import { mdns } from '@libp2p/mdns'
 import { preSharedKey } from '@libp2p/pnet';
 export class NormalNode extends NodeLibp2p {
-    static async create(ip: string | null, psk: Uint8Array): Promise<NormalNode> {
+    static async create(ip: string | null, psk: Uint8Array, port: number = 1080): Promise<NormalNode> {
         const instance = new NormalNode();
         instance.node = await createLibp2p({
             addresses: {
-                listen: ['/ip4/0.0.0.0/tcp/1080', '/ip6/::/tcp/1080'],
-                announce: ip ? ['/ip6/' + ip + '/tcp/1080'] : []
+                listen: [`/ip4/0.0.0.0/tcp/${port}`, `/ip6/::/tcp/${port}`],
+                announce: ip ? [`/ip6/${ip}/tcp/${port}`] : []
             },
             transports: [
                 tcp(),
