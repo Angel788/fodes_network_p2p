@@ -16,7 +16,6 @@ export class ComunicationProtocol {
         this.node.handle(this.direction, (stream) => {
             Promise.resolve().then(async () => {
                 try {
-                    console.log("yyy")
                     const lp = lpStream(stream);
                     const req = await lp.read();
                     const query = JSON.parse(new TextDecoder().decode(req.subarray()));
@@ -26,12 +25,17 @@ export class ComunicationProtocol {
                         const publication = await this.dbManager.getContent(targetCID);
                         const dataToSend = publication.data ? publication.data : publication;
 
-                        await lp.write(new TextEncoder().encode(JSON.stringify(dataToSend)));
+                        const encodedData = new TextEncoder().encode(JSON.stringify(dataToSend));
+                        await lp.write(encodedData);
+                        // Aseguramos que los datos se envíen antes de cerrar
+                        await stream.close();
                     } catch (error) {
                         console.log("No se pudo hacer la consulta de la " + this.type + " error: ", error);
+                        stream.abort(error as Error);
                     }
                 } catch (err) {
                     console.log("Error cid puede estar corrupto " + this.type + " error: " + err);
+                    stream.abort(err as Error);
                 }
             });
         });

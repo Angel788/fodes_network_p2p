@@ -32,10 +32,10 @@ function getRandom(arr: any[]) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-async function generateMockData(count = 200) {
+async function generateMockData(count = 5000) {
     const publications = [];
     const now = new Date();
-
+    console.log(count)
     for (let i = 0; i < count; i++) {
         const author = getRandom(AUTHORS);
         const category = getRandom(CATEGORIES);
@@ -73,15 +73,13 @@ async function generateMockData(count = 200) {
         const cid = await generateCid(pubPayload);
         
         // La estructura final del JSON de prueba incluye el CID como metadato externo
-        publications.push({
-            "cid_content": cid,
-            ...pubPayload
-        });
+        console.log(cid);
+        publications.push({ cid: cid, data: pubPayload});
     }
 
-    const outputPath = path.join(__dirname, 'mock_publications_200.json');
+    const outputPath = path.join(__dirname, 'mock_publications.json');
     fs.writeFileSync(outputPath, JSON.stringify(publications, null, 2));
     console.log(`Generados ${count} JSONs con integridad criptográfica verificada en ${outputPath}`);
 }
 
-generateMockData(200).catch(console.error);
+generateMockData(1000).catch(console.error);

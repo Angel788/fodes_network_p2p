@@ -4,9 +4,10 @@ import fs from 'fs'
 import { pathToFileURL, fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const NUM_NODES = 40 // Ajustable a 500
-const BASE_PORT = 10000
-const STARTUP_DELAY_MS = 500 // Reducido para agilizar el arranque masivo
+const NUM_NODES = 50 
+const NODES_PER_PROCESS = 5
+const NUM_PROCESSES = Math.ceil(NUM_NODES / NODES_PER_PROCESS)
+const BASE_PORT = 11000
 const OUTPUT_FILE = path.join(__dirname, 'benchmark_results.csv')
 const SEARCH_LOG = path.join(__dirname, 'search_latencies.csv')
 
@@ -15,117 +16,98 @@ const tsxPath = pathToFileURL(path.join(gatewayPath, 'node_modules/tsx/dist/esm/
 const nodeScriptPath = path.join(__dirname, 'node-test.mts')
 
 async function runBenchmark() {
-    console.log(`Iniciando prueba de rendimiento determinista (${NUM_NODES} nodos)...`)
+    console.log(`🚀 Iniciando benchmark: ${NUM_NODES} nodos en ${NUM_PROCESSES} procesos (${NODES_PER_PROCESS} nodos/hilo)...`)
 
-    const activeNodes: Map<number, any> = new Map()
-    const nodeAddrs: string[] = []
-    const escomBootstrap = '/ip4/136.111.150.103/tcp/1080/p2p/12D3KooWCUn4CPAQF38fLag8dqYGaXkx8MXhFjdrBLEJWv7eixyg'
-    const allMetrics: any[] = []
+    const activeProcesses: Map<number, any> = new Map()
+    const escomBootstrap = '/ip4/35.254.223.142/tcp/1080/p2p/12D3KooWCUn4CPAQF38fLag8dqYGaXkx8MXhFjdrBLEJWv7eixyg'
     const searchLatencies: any[] = []
     
-    let nodesReady = 0
-    let nodesFinished = 0
+    let processesFinished = 0
 
     // Preparar archivos
     if (!fs.existsSync(path.join(__dirname, 'dbs'))) fs.mkdirSync(path.join(__dirname, 'dbs'), { recursive: true })
-    fs.writeFileSync(OUTPUT_FILE, 'nodeIndex,timestamp,heapMemory,peerCount,lastSearchLatency\n')
-    fs.writeFileSync(SEARCH_LOG, 'timestamp,latency,success\n')
+    fs.writeFileSync(OUTPUT_FILE, 'nodeIndex,timestamp,heapMemory,peerCount,dhtSize,throughputIn,throughputOut,lastSearchLatency\n')
+    fs.writeFileSync(SEARCH_LOG, 'timestamp,latency,success,nodeIndex\n')
 
-    const spawnNode = (index: number, bAddr: string) => {
+    const spawnProcess = (pIndex: number) => {
         return new Promise((resolve) => {
             const child = fork(nodeScriptPath, [
-                (BASE_PORT + index).toString(),
-                bAddr,
-                index.toString()
+                (BASE_PORT + (pIndex * NODES_PER_PROCESS)).toString(),
+                escomBootstrap,
+                pIndex.toString()
             ], {
                 stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
                 execArgv: ['--import', tsxPath],
                 cwd: gatewayPath
             })
 
-
             child.on('message', (msg: any) => {
                 if (msg.type === 'ready') {
-                    if (msg.multiaddr) nodeAddrs.push(msg.multiaddr)
-                    nodesReady++
                     resolve(child)
                 } else if (msg.type === 'metrics') {
-                    allMetrics.push(msg.data)
-                    fs.appendFileSync(OUTPUT_FILE, `${msg.data.nodeIndex},${msg.data.timestamp},${msg.data.heapMemory},${msg.data.peerCount},${msg.data.lastSearchLatency}\n`)
+                    const d = msg.data
+                    fs.appendFileSync(OUTPUT_FILE, `${d.nodeIndex},${d.timestamp},${d.heapMemory},${d.peerCount},${d.dhtSize},${d.throughputIn},${d.throughputOut},${d.lastSearchLatency}\n`)
                 } else if (msg.type === 'search_result') {
                     searchLatencies.push(msg)
-                    fs.appendFileSync(SEARCH_LOG, `${new Date().toISOString()},${msg.latency},${msg.success}\n`)
+                    fs.appendFileSync(SEARCH_LOG, `${new Date().toISOString()},${msg.latency},${msg.success},${msg.nodeIndex}\n`)
                 } else if (msg.type === 'done_queries') {
-                    nodesFinished++
-                    console.log(`[TEST] Nodo completó sus consultas. (${nodesFinished}/${NUM_NODES})`)
+                    processesFinished++
+                    console.log(`[TEST] Proceso ${pIndex} finalizó todas sus consultas (${processesFinished}/${NUM_PROCESSES})`)
                 }
             })
 
-            child.on('exit', () => {
-                activeNodes.delete(index)
-            })
-
-            activeNodes.set(index, child)
+            activeProcesses.set(pIndex, child)
         })
     }
 
-    // 1. Iniciar TODOS los procesos (solo se conectan al Bootstrap inicialmente)
-    console.log(`[Runner] Spawning ${NUM_NODES} nodos...`)
-    for (let i = 0; i < NUM_NODES; i++) {
-        spawnNode(i, escomBootstrap)
-        await new Promise(r => setTimeout(r, STARTUP_DELAY_MS))
-    }
-
-    // 2. Esperar a que todos estén listos (hayan enviado su multiaddr)
-    console.log('[Runner] Esperando a que todos los nodos estén listos...')
-    while(nodesReady < NUM_NODES) {
+    // 1. Iniciar procesos en paralelo/secuencia controlada
+    for (let i = 0; i < NUM_PROCESSES; i++) {
+        await spawnProcess(i)
+        console.log(`[TEST] Proceso ${i + 1}/${NUM_PROCESSES} listo (${NODES_PER_PROCESS} nodos internos)`)
         await new Promise(r => setTimeout(r, 1000))
     }
 
-    // 3. Enviar lista de nodos a todos para forzar conexión directa (Mesh)
-    console.log('🔗 [Runner] Conectando nodos entre sí...')
-    for (const child of activeNodes.values()) {
-        child.send({ type: 'all_nodes', addrs: nodeAddrs })
+    console.log(`\n✅ Red activa. Esperando 15 segundos para estabilización (mDNS/DHT)...`)
+    await new Promise(r => setTimeout(r, 15000))
+
+    console.log(`🚀 Enviando señal de inicio a todos los procesos...`)
+    for (const child of activeProcesses.values()) {
+        child.send('start_queries')
     }
 
-    // 4. Pequeña pausa para que se establezcan las conexiones directas
-    await new Promise(r => setTimeout(r, 5000))
-
-    // 5. Enviar señal de inicio de prueba
-    console.log('🚀 [Runner] ¡Iniciando Test!')
-    for (const child of activeNodes.values()) {
-        child.send({ type: 'start' })
-    }
-
-    console.log(`Red activa. Esperando a que todos los nodos finalicen sus consultas...`)
-
-    // 6. Esperar hasta que todos reporten haber terminado sus consultas
-    while(nodesFinished < NUM_NODES) {
+    // 2. Esperar a que todos los procesos terminen sus tareas
+    while(processesFinished < NUM_PROCESSES) {
         await new Promise(r => setTimeout(r, 1000))
     }
 
-    console.log('\nFinalizando benchmark y apagando nodos...')
-    
-    // Apagar todos los nodos de forma coordinada
-    for (const child of activeNodes.values()) {
-        child.send('shutdown')
+    console.log('\n🛑 Finalizando y apagando procesos...')
+    const shutdownPromises = []
+    for (const child of activeProcesses.values()) {
+        shutdownPromises.push(new Promise((resolve) => {
+            child.on('exit', resolve)
+            child.send('shutdown')
+        }))
     }
 
-    // Pequeña espera para que los procesos cierren limpiamente
-    await new Promise(r => setTimeout(r, 2000))
+    await Promise.race([
+        Promise.all(shutdownPromises),
+        new Promise(r => setTimeout(r, 5000))
+    ])
 
-    // Análisis
+    // 3. Análisis de Resultados
     const successSearches = searchLatencies.filter(s => s.success)
     const avgLatency = successSearches.reduce((s, m) => s + m.latency, 0) / (successSearches.length || 1)
     const successRate = (searchLatencies.length > 0) ? (successSearches.length / searchLatencies.length) * 100 : 0
 
-    console.log('\n--- RESULTADOS DEL BENCHMARK (FINITO) ---')
+    console.log('\n--- 📊 RESULTADOS DEL BENCHMARK MULTI-HILO ---')
     console.log(`Nodos Totales: ${NUM_NODES}`)
-    console.log(`Búsquedas Esperadas: ${NUM_NODES * 20}`)
+    console.log(`Procesos (Hilos): ${NUM_PROCESSES} (10 nodos c/u)`)
     console.log(`Búsquedas Realizadas: ${searchLatencies.length}`)
     console.log(`Tasa de éxito: ${successRate.toFixed(2)}%`)
     console.log(`Latencia promedio (éxitos): ${avgLatency.toFixed(2)} ms`)
-    console.log(`\nLos archivos CSV están listos en gateway/test/ para tu análisis.`)
+    console.log(`\nArchivos generados:`)
+    console.log(`- ${OUTPUT_FILE}`)
+    console.log(`- ${SEARCH_LOG}`)
 }
 
 runBenchmark().catch(console.error)
