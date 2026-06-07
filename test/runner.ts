@@ -4,7 +4,7 @@ import fs from 'fs'
 import { pathToFileURL, fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const NUM_NODES = 50 
+const NUM_NODES = 50
 const NODES_PER_PROCESS = 5
 const NUM_PROCESSES = Math.ceil(NUM_NODES / NODES_PER_PROCESS)
 const BASE_PORT = 11000
@@ -19,9 +19,9 @@ async function runBenchmark() {
     console.log(`🚀 Iniciando benchmark: ${NUM_NODES} nodos en ${NUM_PROCESSES} procesos (${NODES_PER_PROCESS} nodos/hilo)...`)
 
     const activeProcesses: Map<number, any> = new Map()
-    const escomBootstrap = '/ip4/35.254.223.142/tcp/1080/p2p/12D3KooWCUn4CPAQF38fLag8dqYGaXkx8MXhFjdrBLEJWv7eixyg'
+    const escomBootstrap = '/ip4/35.254.223.142/tcp/1080/p2p/12D3KooWCxwYZz8a3RDH79VRoawfvfknRPRvpscdRbcBmvZXTg4h'
     const searchLatencies: any[] = []
-    
+
     let processesFinished = 0
 
     // Preparar archivos
@@ -76,7 +76,7 @@ async function runBenchmark() {
     }
 
     // 2. Esperar a que todos los procesos terminen sus tareas
-    while(processesFinished < NUM_PROCESSES) {
+    while (processesFinished < NUM_PROCESSES) {
         await new Promise(r => setTimeout(r, 1000))
     }
 

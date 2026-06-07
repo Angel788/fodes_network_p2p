@@ -45,3 +45,5 @@ Thumbs.db
 # Clave secreta de la red
 #
 swarm.key
+
+.csv

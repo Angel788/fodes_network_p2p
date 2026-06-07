@@ -48,7 +48,7 @@ async function run() {
         fs.mkdirSync(userDir, { recursive: true })
 
         // Crear nodo
-        const node = await NormalNode.create('', psk, bootstrapAddr, port)
+        const node = await NormalNode.create('2806:105e:1:5be8:c056:9621:2843:d1ab', psk, bootstrapAddr, port)
 
         // Conexión al bootstrap con delay escalonado y reintentos
         if (bootstrapAddr) {

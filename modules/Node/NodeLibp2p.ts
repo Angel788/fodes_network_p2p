@@ -243,7 +243,7 @@ export class NodeLibp2p {
 
         // 3. DHT como último recurso (puede tener registros stale)
         try {
-            const cid = CID.parse(targetCID);
+            const cid = await CID.parse(targetCID);
             for await (const provider of this.node.contentRouting.findProviders(cid)) {
                 const idProvider = provider.id;
                 if (idProvider.toString() === this.id) continue
