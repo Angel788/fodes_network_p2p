@@ -19,7 +19,7 @@ async function runBenchmark() {
     console.log(`🚀 Iniciando benchmark: ${NUM_NODES} nodos en ${NUM_PROCESSES} procesos (${NODES_PER_PROCESS} nodos/hilo)...`)
 
     const activeProcesses: Map<number, any> = new Map()
-    const escomBootstrap = '/ip4/35.254.223.142/tcp/1080/p2p/12D3KooWCxwYZz8a3RDH79VRoawfvfknRPRvpscdRbcBmvZXTg4h'
+    const escomBootstrap = '/ip4/35.188.215.47/tcp/1080/p2p/12D3KooWRXyeQv2EyzqxekfWHusKjTCDjLtdpb4MUKeHpgydaHFj'
     const searchLatencies: any[] = []
 
     let processesFinished = 0

@@ -7,8 +7,8 @@ import { readFileSync } from 'node:fs';
 const main = async () => {
     try {
         const psk = readFileSync('./swarm.key');
-        const dir = process.env.BOOTSTRAP_NODE ?? '/ip4/136.111.150.103/tcp/1080/p2p/12D3KooWCUn4CPAQF38fLag8dqYGaXkx8MXhFjdrBLEJWv7eixyg';
-        const node = await NormalNode.create('',psk, dir);
+        const dir = process.env.BOOTSTRAP_NODE ?? '/ip4/35.254.223.142/tcp/1080/p2p/12D3KooWCxwYZz8a3RDH79VRoawfvfknRPRvpscdRbcBmvZXTg4h';
+        const node = await NormalNode.create('', psk, dir);
         const nodeGateway = new NodeGateway(node)
         console.log(node.getDirections());
         await node.contact(dir);
