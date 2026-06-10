@@ -64,15 +64,12 @@ export class NodeLibp2p {
             const cid = CID.parse(targetCID);
             try {
                 const kad = this.node.services.dht as KadDHT
-                for await (const event of kad.provide(cid)) {
-                }
-            } catch (err) {
-                console.log("Lo semntimos hubo un error al aunicar el CID: ", err)
+                for await (const _event of kad.provide(cid)) { /* noop */ }
+            } catch {
+                // DHT provide falla cuando no hay peers suficientes — ignorar
             }
         }
-        catch (err) {
-            console.log("Lo sentimos hubo un error al traducir el CID: ", err);
-        }
+        catch { /* CID inválido */ }
     }
     public async getContent(targetCID: string, protocol: string): Promise<JSON> {
         if (!this.node) { return; }
@@ -164,7 +161,6 @@ export class NodeLibp2p {
             for await (const [key, value] of dbIterator) {
                 if (key.startsWith("bafyrei")) {
                     this.provideContent(key);
-                    console.log(key);
                 }
             }
         } catch (error) {
