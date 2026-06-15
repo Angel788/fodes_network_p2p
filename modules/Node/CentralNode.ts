@@ -79,11 +79,23 @@ export class CentralNode extends NodeLibp2p {
         syncProtocol.init()
         announceProtocol.init()
 
-        // Cuando un nodo se conecta, empujar todo el contenido almacenado
+        // Cuando un nodo se conecta, empujar todo el contenido almacenado.
+        // Guard con pushingPeers para evitar doble push cuando dialProtocol
+        // dentro de pushAllContentToPeer re-dispara peer:connect.
+        const pushingPeers = new Set<string>()
         instance.node.addEventListener('peer:connect', (evt) => {
             const peerId = evt.detail as PeerId
-            console.log(`[Bootstrap] Peer conectado: ${peerId.toString()} — enviando contenido almacenado`)
-            setTimeout(() => syncProtocol.pushAllContentToPeer(peerId), 2000)
+            const key = peerId.toString()
+            if (pushingPeers.has(key)) return
+            console.log(`[Bootstrap] Peer conectado: ${key} — enviando contenido almacenado`)
+            pushingPeers.add(key)
+            setTimeout(async () => {
+                try {
+                    await syncProtocol.pushAllContentToPeer(peerId)
+                } finally {
+                    pushingPeers.delete(key)
+                }
+            }, 2000)
         })
 
         return instance;
