@@ -82,7 +82,8 @@ export class CentralNode extends NodeLibp2p {
         // Cuando un nodo se conecta, empujar todo el contenido almacenado.
         // Guard con pushingPeers para evitar doble push cuando dialProtocol
         // dentro de pushAllContentToPeer re-dispara peer:connect.
-        const pushedPeers = new Set<string>()
+        // Map<peerId, contentCount> — re-empuja si hay contenido nuevo desde el último push
+        const lastPushedCount = new Map<string, number>()
         instance.node.addEventListener('peer:connect', (evt) => {
             const peerId = evt.detail as PeerId
             const key = peerId.toString()
@@ -96,14 +97,20 @@ export class CentralNode extends NodeLibp2p {
                 } catch { /* peer desconectado antes de identify */ }
             }, 1500)
 
-            if (pushedPeers.has(key)) {
-                console.log(`[Bootstrap] Peer ${key.slice(0, 20)} reconectado — ya sincronizado esta sesión`)
-                return
-            }
-            console.log(`[Bootstrap] Peer conectado: ${key.slice(0, 20)} — enviando contenido en 2s`)
-            pushedPeers.add(key)
             setTimeout(async () => {
                 try {
+                    // Contar contenido actual
+                    let currentCount = 0
+                    for await (const [k] of instance.nodeDb.getDb().iterator()) {
+                        if (k.startsWith('bafyrei')) currentCount++
+                    }
+                    const lastCount = lastPushedCount.get(key) ?? -1
+                    if (lastCount === currentCount) {
+                        console.log(`[Bootstrap] Peer ${key.slice(0, 20)} reconectado — sin contenido nuevo (${currentCount} items), omitiendo`)
+                        return
+                    }
+                    console.log(`[Bootstrap] Peer ${key.slice(0, 20)} — enviando ${currentCount} items (antes: ${lastCount === -1 ? 'nunca' : lastCount})`)
+                    lastPushedCount.set(key, currentCount)
                     await syncProtocol.pushAllContentToPeer(peerId)
                 } catch { /* peer desconectado */ }
             }, 2000)
