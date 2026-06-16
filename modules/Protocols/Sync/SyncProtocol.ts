@@ -14,6 +14,37 @@ export class SyncProtocol {
         this.db   = db
     }
 
+    // Protocolo pull: el peer que lo necesita marca la pauta, el bootstrap responde con todo su contenido
+    public initPull() {
+        const PULL_PROTOCOL = '/forum/sync/pull/1.0.0'
+        const CHUNK = 50
+        this.node.handle(PULL_PROTOCOL, async (stream) => {
+            try {
+                const lp = lpStream(stream)
+                const entries: { cid: string; data: any }[] = []
+                for await (const [key, value] of this.db.getDb().iterator()) {
+                    if (!key.startsWith('bafyrei')) continue
+                    try {
+                        const data = (value && typeof value === 'object')
+                            ? value as unknown as Record<string, unknown>
+                            : JSON.parse(value as unknown as string)
+                        entries.push({ cid: key, data })
+                    } catch {}
+                }
+                console.log(`[Bootstrap][Pull] respondiendo con ${entries.length} items en ${Math.ceil(entries.length / CHUNK)} chunks`)
+                for (let i = 0; i < entries.length; i += CHUNK) {
+                    const items = entries.slice(i, i + CHUNK)
+                    await lp.write(new TextEncoder().encode(JSON.stringify({ type: 'contentBatch', items })))
+                }
+                await lp.write(new TextEncoder().encode(JSON.stringify({ type: 'pullDone' })))
+            } catch (e) {
+                console.log(`[Bootstrap][Pull] ERROR: ${e}`)
+            } finally {
+                ;(stream as any).close?.()?.catch?.(() => {})
+            }
+        })
+    }
+
     public init() {
         this.node.handle(this.PROTOCOL, async (stream) => {
             try {

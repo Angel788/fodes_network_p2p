@@ -77,6 +77,7 @@ export class CentralNode extends NodeLibp2p {
         const syncProtocol     = new SyncProtocol(instance.node, instance.nodeDb)
         const announceProtocol = new AnnounceProtocol(instance.node)
         syncProtocol.init()
+        syncProtocol.initPull()
         announceProtocol.init()
 
         // Cuando un nodo se conecta, empujar todo el contenido almacenado.
