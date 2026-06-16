@@ -22,4 +22,20 @@ const main = async () => {
     }
 }
 
+// Node.js 22 mata el proceso en unhandledRejection por defecto.
+// libp2p lanza StreamAbortEvent/StreamResetEvent como promesas rechazadas
+// al cerrarse streams — los ignoramos para que el Bootstrap no crashee.
+process.on('unhandledRejection', (reason) => {
+    const msg = String((reason as any)?.message ?? reason)
+    if (
+        msg.includes('StreamReset') ||
+        msg.includes('StreamAbort') ||
+        msg.includes('stream reset') ||
+        msg.includes('stream abort') ||
+        msg.includes('connection reset') ||
+        msg.includes('aborted')
+    ) return
+    console.log('[Bootstrap] UnhandledRejection (no fatal):', reason)
+})
+
 main()

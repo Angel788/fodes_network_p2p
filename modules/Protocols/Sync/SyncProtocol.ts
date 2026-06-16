@@ -15,33 +15,28 @@ export class SyncProtocol {
     }
 
     public init() {
-        this.node.handle(this.PROTOCOL, (stream) => {
-            Promise.resolve().then(async () => {
-                try {
-                    const lp  = lpStream(stream)
-                    const raw = await lp.read()
-                    const msg = JSON.parse(new TextDecoder().decode(raw.subarray())) as SyncMsg
+        this.node.handle(this.PROTOCOL, async (stream) => {
+            try {
+                const lp  = lpStream(stream)
+                const raw = await lp.read()
+                const msg = JSON.parse(new TextDecoder().decode(raw.subarray())) as SyncMsg
 
-                    // Si es contenido nuevo, guardarlo en la DB del bootstrap
-                    if (msg.type === 'content' && msg.cid?.startsWith('bafyrei')) {
-                        const existing = await this.db.getContent(msg.cid)
-                        if (existing.error) {
-                            await this.db.saveContent(msg.cid, msg.data)
-                            console.log(`[Bootstrap][Sync] Contenido almacenado: ${msg.cid}`)
-                        }
+                if (msg.type === 'content' && msg.cid?.startsWith('bafyrei')) {
+                    const existing = await this.db.getContent(msg.cid)
+                    if (existing.error) {
+                        await this.db.saveContent(msg.cid, msg.data)
+                        console.log(`[Bootstrap][Sync] Contenido almacenado: ${msg.cid}`)
                     }
-
-                    // Reenviar el mensaje a TODOS los peers conectados
-                    // Los receptores tienen deduplicación propia, así que es seguro
-                    for (const peerId of this.node.getPeers()) {
-                        this.push(peerId, msg).catch(() => {})
-                    }
-                } catch {
-                    // stream malformado o peer desconectado
-                } finally {
-                    try { (stream as any).close?.() } catch {}
                 }
-            })
+
+                for (const peerId of this.node.getPeers()) {
+                    this.push(peerId, msg).catch(() => {})
+                }
+            } catch {
+                // stream malformado o peer desconectado
+            } finally {
+                ;(stream as any).close?.()?.catch?.(() => {})
+            }
         })
     }
 
@@ -56,7 +51,7 @@ export class SyncProtocol {
         } catch {
             // peer inalcanzable — silencioso
         } finally {
-            try { stream?.close() } catch {}
+            ;(stream as any)?.close?.()?.catch?.(() => {})
         }
     }
 

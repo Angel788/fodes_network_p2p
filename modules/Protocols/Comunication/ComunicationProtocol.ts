@@ -13,27 +13,20 @@ export class ComunicationProtocol {
         this.dbManager = dbManger;
     }
     public initProcol() {
-        this.node.handle(this.direction, (stream) => {
-            Promise.resolve().then(async () => {
-                try {
-                    console.log("yyy")
-                    const lp = lpStream(stream);
-                    const req = await lp.read();
-                    const query = JSON.parse(new TextDecoder().decode(req.subarray()));
-                    const targetCID = query['cid'];
-
-                    try {
-                        const publication = await this.dbManager.getContent(targetCID);
-                        const dataToSend = publication.data ? publication.data : publication;
-
-                        await lp.write(new TextEncoder().encode(JSON.stringify(dataToSend)));
-                    } catch (error) {
-                        console.log("No se pudo hacer la consulta de la " + this.type + " error: ", error);
-                    }
-                } catch (err) {
-                    console.log("Error cid puede estar corrupto " + this.type + " error: " + err);
-                }
-            });
+        this.node.handle(this.direction, async (stream) => {
+            try {
+                const lp = lpStream(stream);
+                const req = await lp.read();
+                const query = JSON.parse(new TextDecoder().decode(req.subarray()));
+                const targetCID = query['cid'];
+                const publication = await this.dbManager.getContent(targetCID);
+                const dataToSend = publication.data ? publication.data : publication;
+                await lp.write(new TextEncoder().encode(JSON.stringify(dataToSend)));
+            } catch {
+                // stream reset, CID no encontrado, o peer desconectado — ignorar
+            } finally {
+                (stream as any).close?.()?.catch?.(() => {})
+            }
         });
     }
 }

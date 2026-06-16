@@ -20,33 +20,27 @@ export class NodeDbManager {
     }
     public async saveContent(hash: string, data: any): Promise<DbResponse> {
         try {
-            await this.db.put(hash, JSON.stringify(data))
-            return {
-                error: false,
-                message: "Content Saved"
+            const serialized = JSON.stringify(data)
+            if (!serialized || serialized === 'undefined') {
+                return { error: true, message: 'Data no serializable' }
             }
+            await this.db.put(hash, serialized)
+            return { error: false, message: "Content Saved" }
         } catch (error) {
-            return {
-                error: true,
-                message: error
-            }
+            return { error: true, message: error }
         }
     }
     public async getContent(hash: string): Promise<DbResponse> {
         try {
-            const data = await this.db.get(hash);
-            const json = JSON.parse(data);
-            return {
-                message: "Content Consultated",
-                error: false,
-                data: json
+            const raw = await this.db.get(hash)
+            const str = typeof raw === 'string' ? raw : JSON.stringify(raw)
+            if (!str || str === 'undefined' || str === 'null') {
+                return { error: true, message: 'Entrada vacía' }
             }
-        } catch (error) {
-            console.log(error);
-            return {
-                error: true,
-                message: error
-            }
+            const json = JSON.parse(str)
+            return { message: "Content Consultated", error: false, data: json }
+        } catch {
+            return { error: true, message: 'Not found' }
         }
     }
 }
