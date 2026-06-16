@@ -57,16 +57,27 @@ export class SyncProtocol {
 
     // Envía todo el contenido almacenado en el bootstrap a un peer recién conectado
     public async pushAllContentToPeer(peerId: PeerId): Promise<void> {
+        const CHUNK = 100
         try {
+            const entries: { cid: string; data: any }[] = []
             for await (const [key, value] of this.db.getDb().iterator()) {
                 if (!key.startsWith('bafyrei')) continue
                 try {
                     const data = (value && typeof value === 'object')
                         ? value as unknown as Record<string, unknown>
                         : JSON.parse(value as unknown as string)
-                    await this.push(peerId, { type: 'content', cid: key, data })
+                    entries.push({ cid: key, data })
                 } catch {}
             }
-        } catch {}
+            console.log(`[Bootstrap][Sync] pushAllContent → ${peerId.toString().slice(0, 20)} total=${entries.length} chunks=${Math.ceil(entries.length / CHUNK)}`)
+            for (let i = 0; i < entries.length; i += CHUNK) {
+                const items = entries.slice(i, i + CHUNK)
+                await this.push(peerId, { type: 'contentBatch', items })
+                console.log(`[Bootstrap][Sync] chunk ${Math.floor(i / CHUNK) + 1} enviado (${items.length} items)`)
+            }
+            console.log(`[Bootstrap][Sync] pushAllContent COMPLETO`)
+        } catch (e) {
+            console.log(`[Bootstrap][Sync] pushAllContent ERROR: ${e}`)
+        }
     }
 }
