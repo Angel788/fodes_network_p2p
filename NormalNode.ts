@@ -13,7 +13,7 @@ const main = async () => {
     try {
         const psk = readFileSync('./swarm.key');
         const ip6 = await getLocalIPv6()
-        const dir = '/ip4/34.70.68.193/tcp/1090/p2p/12D3KooWP6tccTrkSGbUCVcTPJgdShj9m8D67847LBYcaSQHr6Tz';
+        const dir = '/ip4/34.70.68.193/tcp/1080/p2p/12D3KooWCUn4CPAQF38fLag8dqYGaXkx8MXhFjdrBLEJWv7eixyg';
         const node = await NormalNode.create(ip6, psk);
         const nodeGateway = new NodeGateway(node)
         console.log(node.getDirections());
