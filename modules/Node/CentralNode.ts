@@ -82,19 +82,30 @@ export class CentralNode extends NodeLibp2p {
         // Cuando un nodo se conecta, empujar todo el contenido almacenado.
         // Guard con pushingPeers para evitar doble push cuando dialProtocol
         // dentro de pushAllContentToPeer re-dispara peer:connect.
-        const pushingPeers = new Set<string>()
+        const pushedPeers = new Set<string>()
         instance.node.addEventListener('peer:connect', (evt) => {
             const peerId = evt.detail as PeerId
             const key = peerId.toString()
-            if (pushingPeers.has(key)) return
-            console.log(`[Bootstrap] Peer conectado: ${key} — enviando contenido almacenado`)
-            pushingPeers.add(key)
+
+            // Mostrar direcciones conocidas del peer (disponibles tras identify ~1s)
+            setTimeout(async () => {
+                try {
+                    const peer = await instance.node.peerStore.get(peerId)
+                    const addrs = peer.addresses.map((a: any) => a.multiaddr.toString()).join(' | ')
+                    console.log(`[Bootstrap] Peer ${key.slice(0, 20)} addrs: ${addrs || '(ninguna aún)'}`)
+                } catch { /* peer desconectado antes de identify */ }
+            }, 1500)
+
+            if (pushedPeers.has(key)) {
+                console.log(`[Bootstrap] Peer ${key.slice(0, 20)} reconectado — ya sincronizado esta sesión`)
+                return
+            }
+            console.log(`[Bootstrap] Peer conectado: ${key.slice(0, 20)} — enviando contenido en 2s`)
+            pushedPeers.add(key)
             setTimeout(async () => {
                 try {
                     await syncProtocol.pushAllContentToPeer(peerId)
-                } finally {
-                    pushingPeers.delete(key)
-                }
+                } catch { /* peer desconectado */ }
             }, 2000)
         })
 
